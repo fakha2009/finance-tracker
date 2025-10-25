@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WealthFlow Pro | Умное управление финансами</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="bg-particles" id="particles-js"></div>
+    <div class="gradient-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Настройки профиля</h3>
+        <button class="modal-close" onclick="closeModal('settings-modal')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="settings-form">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input id="settings-username" type="text" placeholder=" " required />
+            <label>Имя пользователя</label>
+            <div class="input-highlight"></div>
+          </div>
+
+          <div class="input-group">
+            <i class="fas fa-money-bill-wave"></i>
+            <select id="settings-default-currency" required>
+              <option value="">Валюта по умолчанию</option>
+            </select>
+            <div class="input-highlight"></div>
+          </div>
+
+          <div class="form-header" style="margin-top:1rem;margin-bottom:.75rem;">
+            <h3 style="font-size:1.1rem">Смена пароля</h3>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input id="old-password" type="password" placeholder=" " />
+            <label>Текущий пароль</label>
+            <div class="input-highlight"></div>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input id="new-password" type="password" placeholder=" " />
+            <label>Новый пароль</label>
+            <div class="input-highlight"></div>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-key"></i>
+            <input id="confirm-password" type="password" placeholder=" " />
+            <label>Подтвердите пароль</label>
+            <div class="input-highlight"></div>
+          </div>
+
+          <div class="modal-footer" style="margin-top:1rem;">
+            <button type="button" class="btn-secondary" onclick="closeModal('settings-modal')">Отмена</button>
+            <button type="submit" class="btn-primary">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Premium Header -->
+    <header class="premium-header">
+      <nav class="nav-container">
+        <div class="nav-brand">
+          <div class="logo-master">
+            <div class="logo-icon">
+              <img src="assets/logo-wallet.svg" alt="WealthFlow Logo" class="brand-logo" />
+            </div>
+            <div class="logo-pulse"></div>
+          </div>
+          <div class="brand-text">
+            <h1 class="brand-name">WealthFlow</h1>
+            <span class="pro-tag">PRO</span>
+          </div>
+        </div>
+        <div id="auth-info" class="auth-info hidden">
+          <div class="user-pill">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-meta">
+              <div class="user-name" id="user-name">User</div>
+            </div>
+          </div>
+          <button id="logout-btn" class="icon-btn" title="Выйти" aria-label="Выйти">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+        
+        <div id="auth" class="auth-section">
+          <div class="auth-hero">
+            <div id="login-hero" class="hero-scene active" aria-hidden="false">
+              <div class="hero-card">
+                <div class="hero-icon">
+                  <img src="assets/logo-wallet.svg" alt="Wallet" />
+                </div>
+                <h3>Добро пожаловать</h3>
+                <p>Управляйте расходами умно</p>
+                <div class="hero-coins">
+                  <span class="coin c1"></span>
+                  <span class="coin c2"></span>
+                  <span class="coin c3"></span>
+                </div>
+              </div>
+            </div>
+            <div id="register-hero" class="hero-scene" aria-hidden="true">
+              <div class="hero-card">
+                <div class="hero-icon hero-icon--spark">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <h3>Создайте аккаунт</h3>
+                <p>Начните путь к финансовой свободе</p>
+                <div class="hero-sparks">
+                  <span class="spark s1"></span>
+                  <span class="spark s2"></span>
+                  <span class="spark s3"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="auth-forms" class="auth-forms-container">
+            <div class="auth-tabs">
+              <button class="tab-btn active" data-tab="login">
+                <i class="fas fa-sign-in-alt"></i>
+                Вход
+              </button>
+              <button class="tab-btn" data-tab="register">
+                <i class="fas fa-user-plus"></i>
+                Регистрация
+              </button>
+            </div>
+            
+            <div class="tab-content active" id="login-tab">
+              <form id="login-form" class="auth-form">
+                <div class="form-header">
+                  <h3>Добро пожаловать</h3>
+                  <p>Войдите в свой аккаунт</p>
+                </div>
+                
+                <div class="input-group">
+                  <i class="fas fa-envelope"></i>
+                  <input id="login-email" type="email" placeholder=" " required />
+                  <label>Email</label>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group">
+                  <i class="fas fa-lock"></i>
+                  <input id="login-password" type="password" placeholder=" " required />
+                  <label>Пароль</label>
+                  <div class="input-highlight"></div>
+                  <button type="button" id="login-pass-toggle" class="input-action" aria-label="Показать пароль">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-glow">
+                  <span class="btn-content">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в аккаунт
+                  </span>
+                  <div class="btn-shine"></div>
+                </button>
+              </form>
+            </div>
+            
+            <div class="tab-content" id="register-tab">
+              <form id="register-form" class="auth-form">
+                <div class="form-header">
+                  <h3>Создать аккаунт</h3>
+                  <p>Присоединяйтесь к WealthFlow Pro</p>
+                </div>
+                
+                <div class="input-group">
+                  <i class="fas fa-user"></i>
+                  <input id="reg-username" type="text" placeholder=" " required />
+                  <label>Имя пользователя</label>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group">
+                  <i class="fas fa-envelope"></i>
+                  <input id="reg-email" type="email" placeholder=" " required />
+                  <label>Email</label>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group">
+                  <i class="fas fa-lock"></i>
+                  <input id="reg-password" type="password" placeholder=" " required />
+                  <label>Пароль</label>
+                  <div class="input-highlight"></div>
+                  <button type="button" id="reg-pass-toggle" class="input-action" aria-label="Показать пароль">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <div class="password-strength">
+                    <div class="strength-bar">
+                      <div id="password-strength-bar"></div>
+                    </div>
+                    <div id="password-strength-text" class="strength-text">Надёжность пароля</div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-glow">
+                  <span class="btn-content">
+                    <i class="fas fa-user-plus"></i>
+                    Зарегистрироваться
+                  </span>
+                  <div class="btn-shine"></div>
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <div id="auth-info" class="user-menu hidden">
+            <div class="user-profile">
+              <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+                <div class="status-dot"></div>
+              </div>
+              <div class="user-details">
+                <span id="user-email" class="user-email"></span>
+                <span class="user-plan">Pro Member</span>
+              </div>
+            </div>
+            <div class="menu-dropdown">
+              <button id="logout-btn" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                Выйти
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Application -->
+    <main id="app" class="premium-dashboard hidden">
+      <!-- Dashboard Navigation -->
+      <nav class="dashboard-nav">
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="overview">
+            <i class="fas fa-chart-pie"></i>
+            <span>Обзор</span>
+          </button>
+          <button class="nav-tab" data-tab="transactions">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Транзакции</span>
+          </button>
+          <button class="nav-tab" data-tab="analytics">
+            <i class="fas fa-chart-line"></i>
+            <span>Аналитика</span>
+          </button>
+          <button class="nav-tab" data-tab="accounts">
+            <i class="fas fa-wallet"></i>
+            <span>Счета</span>
+          </button>
+          <button class="nav-tab" data-tab="categories">
+            <i class="fas fa-tags"></i>
+            <span>Категории</span>
+          </button>
+          <button class="nav-tab" data-tab="exchange">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Обмен валют</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <div class="welcome-section">
+            <div class="greeting">
+              <h2 class="welcome-title" id="greeting-text">Добро пожаловать</h2>
+              <p class="welcome-subtitle" id="current-date"></p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="quick-actions">
+              <button class="btn-action" id="quick-add">
+                <i class="fas fa-plus"></i>
+                Быстрая транзакция
+              </button>
+              <button class="btn-action" id="export-report">
+                <i class="fas fa-download"></i>
+                Экспорт
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content-container">
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview-tab">
+          <!-- Financial Overview -->
+          <section class="financial-overview">
+            <div class="overview-grid">
+              <div class="metric-card income">
+                <div class="metric-header">
+                  <div class="metric-icon">
+                    <i class="fas fa-arrow-trend-up"></i>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Доходы</span>
+                    <span id="total-income" class="metric-value">0</span>
+                  </div>
+                </div>
+                <div class="metric-trend positive">
+                  <i class="fas fa-arrow-up"></i>
+                  <span>+12.5%</span>
+                </div>
+              </div>
+              
+              <div class="metric-card expense">
+                <div class="metric-header">
+                  <div class="metric-icon">
+                    <i class="fas fa-arrow-trend-down"></i>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Расходы</span>
+                    <span id="total-expense" class="metric-value">0</span>
+                  </div>
+                </div>
+                <div class="metric-trend negative">
+                  <i class="fas fa-arrow-up"></i>
+                  <span>+8.3%</span>
+                </div>
+              </div>
+              
+              <div class="metric-card balance">
+                <div class="metric-header">
+                  <div class="metric-icon">
+                    <i class="fas fa-scale-balanced"></i>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Баланс</span>
+                    <span id="net-amount" class="metric-value">0</span>
+                  </div>
+                </div>
+                <div class="metric-trend positive">
+                  <i class="fas fa-arrow-up"></i>
+                  <span>+4.2%</span>
+                </div>
+              </div>
+              
+              <div class="metric-card savings">
+                <div class="metric-header">
+                  <div class="metric-icon">
+                    <i class="fas fa-piggy-bank"></i>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Сбережения</span>
+                    <span id="savings-rate" class="metric-value">0%</span>
+                  </div>
+                </div>
+                <div class="savings-gauge">
+                  <div class="gauge-track">
+                    <div class="gauge-fill" id="savings-gauge"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Quick Stats -->
+          <div class="dashboard-content compact">
+            <!-- Recent Transactions -->
+            <section class="content-section compact">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-clock"></i>
+                  <h3>Последние транзакции</h3>
+                </div>
+                <button class="btn-text" onclick="switchTab('transactions')">
+                  Все транзакции
+                  <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+              <div class="transactions-list compact" id="recent-transactions">
+                <div class="empty-state compact">
+                  <i class="fas fa-receipt"></i>
+                  <p>Нет недавних транзакций</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Exchange Rates -->
+            <section class="content-section compact">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-exchange-alt"></i>
+                  <h3>Курсы валют</h3>
+                </div>
+                <button class="btn-secondary btn-sm" onclick="updateExchangeRates()">
+                  <i class="fas fa-sync"></i>
+                </button>
+              </div>
+              <div class="exchange-rates-grid" id="exchange-rates-overview">
+                <div class="exchange-rate-item">
+                  <span class="currency-pair">USD/RUB</span>
+                  <span class="rate-value">-</span>
+                  <span class="rate-change neutral">0%</span>
+                </div>
+                <div class="exchange-rate-item">
+                  <span class="currency-pair">EUR/RUB</span>
+                  <span class="rate-value">-</span>
+                  <span class="rate-change neutral">0%</span>
+                </div>
+                <div class="exchange-rate-item">
+                  <span class="currency-pair">EUR/USD</span>
+                  <span class="rate-value">-</span>
+                  <span class="rate-change neutral">0%</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="tab-content" id="transactions-tab">
+          <section class="content-section">
+            <div class="section-header">
+              <div class="section-title">
+                <i class="fas fa-exchange-alt"></i>
+                <h3>Управление транзакциями</h3>
+              </div>
+              <div class="section-controls">
+                <div class="filter-toggle" id="filter-toggle">
+                  <i class="fas fa-filter"></i>
+                  Фильтры
+                </div>
+                <button class="btn-primary btn-sm" id="add-transaction-btn">
+                  <i class="fas fa-plus"></i>
+                  Новая транзакция
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters Panel -->
+            <div class="filters-panel" id="filters-panel">
+              <div class="filter-section">
+                <h4>Период</h4>
+                <div class="date-range">
+                  <input type="date" id="period-start">
+                  <span>по</span>
+                  <input type="date" id="period-end">
+                </div>
+              </div>
+              <div class="filter-section">
+                <h4>Тип транзакции</h4>
+                <div class="type-filters">
+                  <label class="filter-option">
+                    <input type="checkbox" name="type" value="income" checked>
+                    <span>Доходы</span>
+                  </label>
+                  <label class="filter-option">
+                    <input type="checkbox" name="type" value="expense" checked>
+                    <span>Расходы</span>
+                  </label>
+                </div>
+              </div>
+              <button class="btn-primary btn-sm" onclick="applyTransactionFilters()">
+                <i class="fas fa-filter"></i>
+                Применить фильтры
+              </button>
+            </div>
+
+            <!-- Transaction Form -->
+            <form id="tx-form" class="transaction-form hidden">
+              <div class="form-grid compact">
+                <div class="input-group compact">
+                  <select id="tx-type" required>
+                    <option value="expense">Расход</option>
+                    <option value="income">Доход</option>
+                  </select>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group compact">
+                  <select id="tx-account" required>
+                    <option value="">Выберите счет</option>
+                  </select>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group compact">
+                  <select id="tx-category" required>
+                    <option value="">Выберите категорию</option>
+                  </select>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group compact">
+                  <input id="tx-amount" type="number" step="0.01" placeholder=" " required />
+                  <label>Сумма</label>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group compact full-width">
+                  <input id="tx-desc" placeholder=" " />
+                  <label>Описание</label>
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <div class="input-group compact">
+                  <input id="tx-date" type="date" required />
+                  <div class="input-highlight"></div>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-sm">
+                  <i class="fas fa-check"></i>
+                  Добавить
+                </button>
+              </div>
+            </form>
+
+            <!-- Transactions List -->
+            <div class="transactions-container">
+              <div class="transactions-list" id="transactions">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <i class="fas fa-receipt"></i>
+                  </div>
+                  <h4>Транзакций пока нет</h4>
+                  <p>Добавьте первую транзакцию чтобы начать</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics-tab">
+          <div class="analytics-grid">
+            <!-- Summary Charts -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-chart-pie"></i>
+                  <h3>Распределение по категориям</h3>
+                </div>
+                <select class="period-select" id="analytics-period">
+                  <option value="month">За месяц</option>
+                  <option value="quarter">За квартал</option>
+                  <option value="year">За год</option>
+                </select>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-by-category" height="300"></canvas>
+              </div>
+            </section>
+
+            <!-- Monthly Stats -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-chart-line"></i>
+                  <h3>Динамика доходов и расходов</h3>
+                </div>
+                <select class="period-select" id="monthly-year">
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                </select>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-monthly" height="300"></canvas>
+              </div>
+            </section>
+
+            <!-- Exchange Rates Chart -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-exchange-alt"></i>
+                  <h3>График курсов валют</h3>
+                </div>
+                <select class="period-select" id="exchange-period">
+                  <option value="7">7 дней</option>
+                  <option value="30" selected>30 дней</option>
+                  <option value="90">90 дней</option>
+                </select>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-exchange-rates" height="300"></canvas>
+              </div>
+            </section>
+
+            <!-- Category Breakdown -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-list"></i>
+                  <h3>Детализация по категориям</h3>
+                </div>
+              </div>
+              <div class="breakdown-list" id="by-category">
+                <div class="empty-state compact">Загружаем данные...</div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Accounts Tab -->
+        <div class="tab-content" id="accounts-tab">
+          <div class="accounts-grid">
+            <!-- Accounts List -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-wallet"></i>
+                  <h3>Мои счета</h3>
+                </div>
+                <button class="btn-primary btn-sm" onclick="showCreateAccountModal()">
+                  <i class="fas fa-plus"></i>
+                  Новый счет
+                </button>
+              </div>
+              <div class="accounts-container" id="accounts-container">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                  <h4>Счетов пока нет</h4>
+                  <p>Создайте первый счет для управления финансами</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Account Details -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-info-circle"></i>
+                  <h3>Детали счета</h3>
+                </div>
+              </div>
+              <div class="account-details" id="account-details">
+                <div class="empty-state compact">
+                  <i class="fas fa-wallet"></i>
+                  <p>Выберите счет для просмотра деталей</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Balances -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-coins"></i>
+                  <h3>Балансы по валютам</h3>
+                </div>
+              </div>
+              <div class="balances-container" id="balances-container">
+                <div class="empty-state compact">
+                  <i class="fas fa-coins"></i>
+                  <p>Загружаем данные о балансах...</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="tab-content" id="categories-tab">
+          <div class="categories-grid">
+            <!-- Create Category Form -->
+            <section class="content-section category-form-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-plus-circle"></i>
+                  <h3>Создать категорию</h3>
+                </div>
+              </div>
+              <form id="category-form" class="category-form">
+                <div class="form-grid">
+                  <div class="input-group">
+                    <i class="fas fa-tag"></i>
+                    <input id="cat-name" type="text" placeholder=" " required />
+                    <label>Название категории</label>
+                    <div class="input-highlight"></div>
+                  </div>
+                  
+                  <div class="input-group">
+                    <i class="fas fa-exchange-alt"></i>
+                    <select id="cat-type" required>
+                      <option value="expense">Расход</option>
+                      <option value="income">Доход</option>
+                    </select>
+                    <div class="input-highlight"></div>
+                  </div>
+                  
+                  <div class="input-group full-width">
+                    <i class="fas fa-align-left"></i>
+                    <input id="cat-desc" type="text" placeholder=" " />
+                    <label>Описание (необязательно)</label>
+                    <div class="input-highlight"></div>
+                  </div>
+                  
+                  <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Создать категорию
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <!-- Categories List -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-tags"></i>
+                  <h3>Мои категории</h3>
+                </div>
+              </div>
+              <div class="categories-container" id="categories-container">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <i class="fas fa-tags"></i>
+                  </div>
+                  <h4>Категорий пока нет</h4>
+                  <p>Создайте первую категорию для организации транзакций</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Exchange Tab -->
+        <div class="tab-content" id="exchange-tab">
+          <div class="exchange-grid">
+            <!-- Exchange Rates -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-exchange-alt"></i>
+                  <h3>Курсы валют</h3>
+                </div>
+                <button class="btn-secondary btn-sm" onclick="updateExchangeRates()">
+                  <i class="fas fa-sync"></i>
+                </button>
+              </div>
+              <div class="exchange-rates-container" id="exchange-rates-container">
+                <div class="empty-state compact">
+                  <i class="fas fa-exchange-alt"></i>
+                  <p>Загружаем курсы валют...</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Currency Converter -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-calculator"></i>
+                  <h3>Конвертер валют</h3>
+                </div>
+              </div>
+              <div class="converter-card">
+                <div class="converter-inputs">
+                  <div class="currency-input-group">
+                    <div class="input-header">
+                      <span class="input-label">Отдаю</span>
+                      <div class="currency-select-wrapper">
+                        <select id="convert-from" class="currency-select" required>
+                          <option value="">Выберите валюту</option>
+                        </select>
+                        <i class="fas fa-chevron-down"></i>
+                      </div>
+                    </div>
+                    <div class="amount-input-wrapper">
+                      <input id="convert-amount" type="number" step="0.01" placeholder="0.00" value="100" class="amount-input" />
+                      <span class="currency-symbol" id="from-symbol">$</span>
+                    </div>
+                  </div>
+
+                  <div class="swap-button-container">
+                    <button type="button" id="convert-swap" class="swap-btn" aria-label="Поменять валюты местами">
+                      <i class="fas fa-right-left"></i>
+                    </button>
+                  </div>
+
+                  <div class="currency-input-group">
+                    <div class="input-header">
+                      <span class="input-label">Получаю</span>
+                      <div class="currency-select-wrapper">
+                        <select id="convert-to" class="currency-select" required>
+                          <option value="">Выберите валюту</option>
+                        </select>
+                        <i class="fas fa-chevron-down"></i>
+                      </div>
+                    </div>
+                    <div class="amount-input-wrapper">
+                      <input id="convert-result" type="text" placeholder="0.00" readonly class="amount-input result-input" />
+                      <span class="currency-symbol" id="to-symbol">₽</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="conversion-details" id="conversion-details" style="display:none;">
+                  <div class="exchange-rate-info">
+                    <span class="rate-label">Текущий курс:</span>
+                    <span class="rate-value" id="exchange-rate-value">-</span>
+                  </div>
+                  <div class="last-updated">
+                    <i class="fas fa-clock"></i>
+                    <span>Обновляется автоматически</span>
+                  </div>
+                </div>
+
+                <div class="converter-actions">
+                  <button type="button" id="quick-convert" class="btn-primary btn-full">
+                    <i class="fas fa-bolt"></i>
+                    Быстрая конвертация
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- User Balances -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-coins"></i>
+                  <h3>Мои балансы</h3>
+                </div>
+              </div>
+              <div class="balances-container" id="exchange-balances-container">
+                <div class="empty-state compact">
+                  <i class="fas fa-coins"></i>
+                  <p>Загружаем данные о балансах...</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Exchange Rates -->
+            <section class="content-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <i class="fas fa-bolt"></i>
+                  <h3>Популярные курсы</h3>
+                </div>
+              </div>
+              <div class="quick-rates-grid" id="quick-rates">
+                <div class="quick-rate-item">
+                  <span class="rate-pair">USD/RUB</span>
+                  <span class="rate-value">-</span>
+                </div>
+                <div class="quick-rate-item">
+                  <span class="rate-pair">EUR/RUB</span>
+                  <span class="rate-value">-</span>
+                </div>
+                <div class="quick-rate-item">
+                  <span class="rate-pair">EUR/USD</span>
+                  <span class="rate-value">-</span>
+                </div>
+                <div class="quick-rate-item">
+                  <span class="rate-pair">GBP/USD</span>
+                  <span class="rate-value">-</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Notifications -->
+  <div id="notifications" class="notifications-container"></div>
+
+  <!-- Create Account Modal -->
+  <div class="modal-overlay hidden" id="create-account-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Создать новый счет</h3>
+        <button class="modal-close" onclick="closeModal('create-account-modal')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <i class="fas fa-wallet"></i>
+          <input id="account-name" type="text" placeholder=" " required />
+          <label>Название счета</label>
+          <div class="input-highlight"></div>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-coins"></i>
+          <select id="account-currency" required>
+            <option value="">Выберите валюту</option>
+          </select>
+          <div class="input-highlight"></div>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-money-bill-wave"></i>
+          <input id="initial-balance" type="number" step="0.01" placeholder=" " value="0" />
+          <label>Начальный баланс</label>
+          <div class="input-highlight"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('create-account-modal')">
+          Отмена
+        </button>
+        <button class="btn-primary" onclick="createAccount()">
+          <i class="fas fa-plus"></i>
+          Создать счет
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Details Modal -->
+  <div class="modal-overlay hidden" id="account-details-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Детали счета</h3>
+        <button class="modal-close" onclick="closeModal('account-details-modal')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="account-details-content">
+        <!-- Account details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loader-content">
+      <div class="loader-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-dot"></div>
+      </div>
+      <p>Загрузка данных...</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
