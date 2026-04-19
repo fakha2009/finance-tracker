@@ -38,10 +38,18 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		UserID:     user.ID,
 		CurrencyID: req.CurrencyID,
 		IsDefault:  false,
+		Name:       req.Name,
 	}
 
 	if req.IsDefault != nil {
 		account.IsDefault = *req.IsDefault
+	}
+
+	// Set starting balance if provided
+	account.Balance = req.InitialBalance
+	// Ensure default name if empty
+	if account.Name == "" {
+		account.Name = "Основной счет"
 	}
 
 	if err := h.accountService.CreateAccount(account); err != nil {

@@ -37,6 +37,7 @@ type Repository interface {
 	CreateCategory(category *models.Category) error
 	GetCategoriesByUserID(userID int) ([]models.Category, error)
 	GetCategoryByID(id int) (*models.Category, error)
+	DeleteCategory(id int, userID int) error
 
 	// Transaction methods
 	CreateTransaction(transaction *models.Transaction) error

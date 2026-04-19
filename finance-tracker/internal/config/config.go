@@ -10,14 +10,18 @@ type Config struct {
 	JWTSecret           string
 	Env                 string
 	ExchangeAPIEndpoint string
+	AllowedOrigin       string
+	CronSecret          string
 }
 
 func Load() (*Config, error) {
 	port := getEnv("PORT", "8080")
-	databaseURL := getEnv("DATABASE_URL", "host=localhost port=5432 user=postgres password=fakha dbname=transactions sslmode=disable")
+	databaseURL := getEnv("DATABASE_URL", "")
 	jwtSecret := getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
 	env := getEnv("GIN_MODE", "debug")
 	exchangeAPIEndpoint := getEnv("EXCHANGE_API_ENDPOINT", "https://api.exchangerate-api.com/v4/latest/USD")
+	allowedOrigin := getEnv("ALLOWED_ORIGIN", "http://localhost:3000")
+	cronSecret := getEnv("CRON_SECRET", "default-cron-secret-change-in-prod")
 
 	return &Config{
 		Port:                port,
@@ -25,6 +29,8 @@ func Load() (*Config, error) {
 		JWTSecret:           jwtSecret,
 		Env:                 env,
 		ExchangeAPIEndpoint: exchangeAPIEndpoint,
+		AllowedOrigin:       allowedOrigin,
+		CronSecret:          cronSecret,
 	}, nil
 }
 

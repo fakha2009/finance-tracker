@@ -2225,6 +2225,72 @@ body {
   color: white;
 }
 
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem 1.1rem;
+  border-radius: 14px;
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(99,102,241,.28), rgba(139,92,246,.18));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.logout-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  opacity: 0;
+  transition: all .45s ease;
+  border-radius: 14px;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(99,102,241,.45);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md), 0 0 0 2px rgba(99,102,241,.15);
+}
+
+.logout-btn:hover::after { left: 120%; opacity: 1; }
+
+.logout-btn i {
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 9999px;
+  background: rgba(239,68,68,.15);
+  box-shadow: inset 0 0 0 1px rgba(239,68,68,.25);
+  color: var(--danger);
+  font-size: .85rem;
+}
+
+.logout-btn span { font-weight: 600; font-size: .9rem; opacity: .95; }
+
+@media (max-width: 640px) {
+  .logout-btn span { display: none; }
+  .logout-btn { padding: .5rem; }
+}
+
 /* Animations */
 @keyframes fadeInUp {
   from {

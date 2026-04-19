@@ -30,6 +30,7 @@ type Account struct {
 	IsDefault  bool      `json:"is_default"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
+	Name       string    `json:"name,omitempty"`
 	Currency   *Currency `json:"currency,omitempty"`
 }
 
@@ -158,8 +159,10 @@ type CurrencyRequest struct {
 }
 
 type AccountRequest struct {
-	CurrencyID int   `json:"currency_id" binding:"required"`
-	IsDefault  *bool `json:"is_default,omitempty"`
+	CurrencyID int     `json:"currency_id" binding:"required"`
+	IsDefault  *bool   `json:"is_default,omitempty"`
+	Name       string  `json:"name,omitempty"`
+	InitialBalance float64 `json:"initial_balance,omitempty"`
 }
 
 type SetDefaultCurrencyRequest struct {

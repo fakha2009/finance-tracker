@@ -34,7 +34,7 @@ func NewHandler(
 	}
 }
 
-func (h *Handler) InitRoutes(router *gin.Engine) {
+func (h *Handler) InitRoutes(router *gin.Engine, cronSecret string) {
 	// Инициализация отдельных хендлеров
 	currencyHandler := NewCurrencyHandler(h.currencyService)
 	accountHandler := NewAccountHandler(h.accountService)
@@ -52,6 +52,11 @@ func (h *Handler) InitRoutes(router *gin.Engine) {
 		public.GET("/exchange/rates", exchangeHandler.GetExchangeRates)
 		public.GET("/exchange/rate/:base/:target", exchangeHandler.GetExchangeRate)
 		public.POST("/exchange/convert-simple", exchangeHandler.ConvertSimpleCurrency)
+		
+		// Cron endpoint 
+		cronGroup := public.Group("/cron")
+		cronGroup.Use(CronMiddleware(cronSecret))
+		cronGroup.POST("/update-rates", exchangeHandler.UpdateExchangeRates)
 	}
 
 	// Группа защищенных маршрутов (требуется JWT + активная сессия)
@@ -68,6 +73,7 @@ func (h *Handler) InitRoutes(router *gin.Engine) {
 		categoryHandler := NewCategoryHandler(h.categoryService)
 		protected.GET("/categories", categoryHandler.GetCategories)
 		protected.POST("/categories", categoryHandler.CreateCategory)
+		protected.DELETE("/categories/:id", categoryHandler.DeleteCategory)
 
 		// Транзакции
 		protected.GET("/transactions", h.GetTransactions)
@@ -93,11 +99,31 @@ func (h *Handler) InitRoutes(router *gin.Engine) {
 	}
 }
 
-// CORS Middleware
-func CORSMiddleware() gin.HandlerFunc {
+// Cron Middleware
+func CronMiddleware(cronSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Allow all origins without credentials
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		key := c.GetHeader("X-CRON-KEY")
+		if key != cronSecret || cronSecret == "" {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized cron request"})
+			return
+		}
+		c.Next()
+	}
+}
+
+// CORS Middleware
+func CORSMiddleware(allowedOrigin string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Strict CORS checking
+		if allowedOrigin == "*" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		} else {
+			// Set strictly the allowed origin, regardless of requester
+			c.Writer.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+			// Credentials are only allowed for specific origins
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 

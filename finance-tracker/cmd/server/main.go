@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
 	"personal-finance-tracker/internal/config"
 	"personal-finance-tracker/internal/handler"
 	"personal-finance-tracker/internal/repository"
 	"personal-finance-tracker/internal/service"
 	"personal-finance-tracker/internal/utils"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -52,41 +57,59 @@ func main() {
 	)
 
 	// Настройка роутера
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		c.AbortWithStatusJSON(500, gin.H{"error": "Internal server error"})
+	}))
+
 	// Явно запрещаем доверие к любым прокси по умолчанию, чтобы убрать предупреждение Gin
 	if err := router.SetTrustedProxies(nil); err != nil {
 		log.Fatalf("Failed to set trusted proxies: %v", err)
 	}
 
 	// Middleware: CORS для доступа фронтенда
-	router.Use(handler.CORSMiddleware())
+	router.Use(handler.CORSMiddleware(cfg.AllowedOrigin))
 
 	// Routes
-	handlers.InitRoutes(router)
+	handlers.InitRoutes(router, cfg.CronSecret)
 
-	// Запускаем фоновое обновление курсов валют при старте
+	// Perform initial exchange rates update, but DO NOT run a background infinite ticker
+	log.Println("Starting initial exchange rates update...")
+	if err := exchangeService.UpdateExchangeRates(); err != nil {
+		log.Printf("Failed to update exchange rates initially: %v", err)
+	} else {
+		log.Println("Initial exchange rates updated successfully.")
+	}
+
+	// Настройка HTTP сервера с таймаутами для продакшена
+	srv := &http.Server{
+		Addr:         ":" + cfg.Port,
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Запуск сервера в горутине, чтобы можно было поймать сигнал
 	go func() {
-		log.Println("Starting initial exchange rates update...")
-		if err := exchangeService.UpdateExchangeRates(); err != nil {
-			log.Printf("Failed to update exchange rates: %v", err)
-		} else {
-			log.Println("Exchange rates updated successfully")
-		}
-
-		// Периодическое обновление каждые 12 часов
-		ticker := time.NewTicker(12 * time.Hour)
-		defer ticker.Stop()
-		for range ticker.C {
-			log.Println("Scheduled exchange rates update...")
-			if err := exchangeService.UpdateExchangeRates(); err != nil {
-				log.Printf("Failed to update exchange rates on schedule: %v", err)
-			} else {
-				log.Println("Scheduled exchange rates updated successfully")
-			}
+		log.Printf("Server starting on port %s", cfg.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
 		}
 	}()
 
-	// Запуск сервера
-	log.Printf("Server starting on port %s", cfg.Port)
-	log.Fatal(router.Run(":" + cfg.Port))
+	// Ожидание сигнала прерывания для graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+
+	log.Println("Server exiting")
 }

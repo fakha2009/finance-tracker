@@ -9,10 +9,23 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
+	"database/sql"
 )
 
 type PostgresRepository struct {
 	db *pgxpool.Pool
+}
+
+func (r *PostgresRepository) DeleteCategory(id int, userID int) error {
+	query := `DELETE FROM categories WHERE id = $1 AND user_id = $2`
+	tag, err := r.db.Exec(context.Background(), query, id, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return errors.New("category not found")
+	}
+	return nil
 }
 
 func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
@@ -20,6 +33,13 @@ func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Защита от зависающих (slow) запросов: таймаут 10 секунд на уровене подключения.
+	// Это критично для продакшена, так как везде используется context.Background().
+	if config.ConnConfig.RuntimeParams == nil {
+		config.ConnConfig.RuntimeParams = make(map[string]string)
+	}
+	config.ConnConfig.RuntimeParams["statement_timeout"] = "10000"
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
@@ -147,16 +167,28 @@ func (r *PostgresRepository) GetCategoriesByUserID(userID int) ([]models.Categor
 	var categories []models.Category
 	for rows.Next() {
 		var category models.Category
+		var userIDNull sql.NullInt32
+		var description sql.NullString
 		err := rows.Scan(
 			&category.ID,
-			&category.UserID,
+			&userIDNull,
 			&category.Name,
-			&category.Description,
+			&description,
 			&category.Type,
 			&category.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if userIDNull.Valid {
+			category.UserID = int(userIDNull.Int32)
+		} else {
+			category.UserID = 0
+		}
+		if description.Valid {
+			category.Description = description.String
+		} else {
+			category.Description = ""
 		}
 		categories = append(categories, category)
 	}
@@ -171,11 +203,13 @@ func (r *PostgresRepository) GetCategoryByID(id int) (*models.Category, error) {
 	`
 
 	var category models.Category
+	var userIDNull sql.NullInt32
+	var description sql.NullString
 	err := r.db.QueryRow(context.Background(), query, id).Scan(
 		&category.ID,
-		&category.UserID,
+		&userIDNull,
 		&category.Name,
-		&category.Description,
+		&description,
 		&category.Type,
 		&category.CreatedAt,
 	)
@@ -187,6 +221,17 @@ func (r *PostgresRepository) GetCategoryByID(id int) (*models.Category, error) {
 		return nil, err
 	}
 
+	if userIDNull.Valid {
+		category.UserID = int(userIDNull.Int32)
+	} else {
+		category.UserID = 0
+	}
+	if description.Valid {
+		category.Description = description.String
+	} else {
+		category.Description = ""
+	}
+	
 	return &category, nil
 }
 
@@ -229,19 +274,38 @@ func (r *PostgresRepository) GetTransactionsByUserID(userID int) ([]models.Trans
 	var transactions []models.Transaction
 	for rows.Next() {
 		var transaction models.Transaction
+		var accountID sql.NullInt32
+		var categoryID sql.NullInt32
+		var description sql.NullString
 		err := rows.Scan(
 			&transaction.ID,
 			&transaction.UserID,
-			&transaction.CategoryID,
-			&transaction.AccountID,
+			&categoryID,
+			&accountID,
 			&transaction.Amount,
-			&transaction.Description,
+			&description,
 			&transaction.Date,
 			&transaction.Type,
 			&transaction.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if categoryID.Valid {
+			transaction.CategoryID = int(categoryID.Int32)
+		} else {
+			transaction.CategoryID = 0
+		}
+		if accountID.Valid {
+			v := int(accountID.Int32)
+			transaction.AccountID = &v
+		} else {
+			transaction.AccountID = nil
+		}
+		if description.Valid {
+			transaction.Description = description.String
+		} else {
+			transaction.Description = ""
 		}
 		transactions = append(transactions, transaction)
 	}
@@ -256,13 +320,16 @@ func (r *PostgresRepository) GetTransactionByID(id int) (*models.Transaction, er
 	`
 
 	var transaction models.Transaction
+	var accountID sql.NullInt32
+	var categoryID sql.NullInt32
+	var description sql.NullString
 	err := r.db.QueryRow(context.Background(), query, id).Scan(
 		&transaction.ID,
 		&transaction.UserID,
-		&transaction.CategoryID,
-		&transaction.AccountID,
+		&categoryID,
+		&accountID,
 		&transaction.Amount,
-		&transaction.Description,
+		&description,
 		&transaction.Date,
 		&transaction.Type,
 		&transaction.CreatedAt,
@@ -275,6 +342,22 @@ func (r *PostgresRepository) GetTransactionByID(id int) (*models.Transaction, er
 		return nil, err
 	}
 
+	if categoryID.Valid {
+		transaction.CategoryID = int(categoryID.Int32)
+	} else {
+		transaction.CategoryID = 0
+	}
+	if accountID.Valid {
+		v := int(accountID.Int32)
+		transaction.AccountID = &v
+	} else {
+		transaction.AccountID = nil
+	}
+	if description.Valid {
+		transaction.Description = description.String
+	} else {
+		transaction.Description = ""
+	}
 	return &transaction, nil
 }
 
@@ -295,19 +378,38 @@ func (r *PostgresRepository) GetTransactionsByPeriod(userID int, start, end time
 	var transactions []models.Transaction
 	for rows.Next() {
 		var transaction models.Transaction
+		var categoryID sql.NullInt32
+		var accountIDNull sql.NullInt32
+		var description sql.NullString
 		err := rows.Scan(
 			&transaction.ID,
 			&transaction.UserID,
-			&transaction.CategoryID,
-			&transaction.AccountID,
+			&categoryID,
+			&accountIDNull,
 			&transaction.Amount,
-			&transaction.Description,
+			&description,
 			&transaction.Date,
 			&transaction.Type,
 			&transaction.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if categoryID.Valid {
+			transaction.CategoryID = int(categoryID.Int32)
+		} else {
+			transaction.CategoryID = 0
+		}
+		if accountIDNull.Valid {
+			v := int(accountIDNull.Int32)
+			transaction.AccountID = &v
+		} else {
+			transaction.AccountID = nil
+		}
+		if description.Valid {
+			transaction.Description = description.String
+		} else {
+			transaction.Description = ""
 		}
 		transactions = append(transactions, transaction)
 	}
@@ -483,10 +585,10 @@ func (r *PostgresRepository) GetCurrencyByCode(code string) (*models.Currency, e
 // Account methods
 func (r *PostgresRepository) CreateAccount(account *models.Account) error {
 	query := `
-		INSERT INTO accounts (user_id, currency_id, balance, is_default, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at, updated_at
-	`
+        INSERT INTO accounts (user_id, currency_id, balance, is_default, name, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, created_at, updated_at
+    `
 
 	return r.db.QueryRow(
 		context.Background(),
@@ -495,6 +597,7 @@ func (r *PostgresRepository) CreateAccount(account *models.Account) error {
 		account.CurrencyID,
 		account.Balance,
 		account.IsDefault,
+		account.Name,
 		time.Now(),
 		time.Now(),
 	).Scan(&account.ID, &account.CreatedAt, &account.UpdatedAt)
@@ -502,13 +605,13 @@ func (r *PostgresRepository) CreateAccount(account *models.Account) error {
 
 func (r *PostgresRepository) GetAccountsByUserID(userID int) ([]models.Account, error) {
 	query := `
-		SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at,
-		       c.id, c.code, c.name, c.symbol, c.created_at
-		FROM accounts a
-		JOIN currencies c ON a.currency_id = c.id
-		WHERE a.user_id = $1
-		ORDER BY a.is_default DESC, a.created_at
-	`
+        SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at, a.name,
+               c.id, c.code, c.name, c.symbol, c.created_at
+        FROM accounts a
+        JOIN currencies c ON a.currency_id = c.id
+        WHERE a.user_id = $1
+        ORDER BY a.is_default DESC, a.created_at
+    `
 
 	rows, err := r.db.Query(context.Background(), query, userID)
 	if err != nil {
@@ -528,6 +631,7 @@ func (r *PostgresRepository) GetAccountsByUserID(userID int) ([]models.Account, 
 			&account.IsDefault,
 			&account.CreatedAt,
 			&account.UpdatedAt,
+			&account.Name,
 			&currency.ID,
 			&currency.Code,
 			&currency.Name,
@@ -546,12 +650,12 @@ func (r *PostgresRepository) GetAccountsByUserID(userID int) ([]models.Account, 
 
 func (r *PostgresRepository) GetAccountByID(id int) (*models.Account, error) {
 	query := `
-		SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at,
-		       c.id, c.code, c.name, c.symbol, c.created_at
-		FROM accounts a
-		JOIN currencies c ON a.currency_id = c.id
-		WHERE a.id = $1
-	`
+        SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at, a.name,
+               c.id, c.code, c.name, c.symbol, c.created_at
+        FROM accounts a
+        JOIN currencies c ON a.currency_id = c.id
+        WHERE a.id = $1
+    `
 
 	var account models.Account
 	var currency models.Currency
@@ -563,6 +667,7 @@ func (r *PostgresRepository) GetAccountByID(id int) (*models.Account, error) {
 		&account.IsDefault,
 		&account.CreatedAt,
 		&account.UpdatedAt,
+		&account.Name,
 		&currency.ID,
 		&currency.Code,
 		&currency.Name,
@@ -583,12 +688,12 @@ func (r *PostgresRepository) GetAccountByID(id int) (*models.Account, error) {
 
 func (r *PostgresRepository) GetDefaultAccount(userID int) (*models.Account, error) {
 	query := `
-		SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at,
-		       c.id, c.code, c.name, c.symbol, c.created_at
-		FROM accounts a
-		JOIN currencies c ON a.currency_id = c.id
-		WHERE a.user_id = $1 AND a.is_default = true
-	`
+        SELECT a.id, a.user_id, a.currency_id, a.balance, a.is_default, a.created_at, a.updated_at, a.name,
+               c.id, c.code, c.name, c.symbol, c.created_at
+        FROM accounts a
+        JOIN currencies c ON a.currency_id = c.id
+        WHERE a.user_id = $1 AND a.is_default = true
+    `
 
 	var account models.Account
 	var currency models.Currency
@@ -600,6 +705,7 @@ func (r *PostgresRepository) GetDefaultAccount(userID int) (*models.Account, err
 		&account.IsDefault,
 		&account.CreatedAt,
 		&account.UpdatedAt,
+		&account.Name,
 		&currency.ID,
 		&currency.Code,
 		&currency.Name,
@@ -613,7 +719,6 @@ func (r *PostgresRepository) GetDefaultAccount(userID int) (*models.Account, err
 	if err != nil {
 		return nil, err
 	}
-
 	account.Currency = &currency
 	return &account, nil
 }
@@ -818,19 +923,38 @@ func (r *PostgresRepository) GetTransactionsByAccountID(accountID int) ([]models
 	var transactions []models.Transaction
 	for rows.Next() {
 		var transaction models.Transaction
+		var categoryID sql.NullInt32
+		var accountIDNull sql.NullInt32
+		var description sql.NullString
 		err := rows.Scan(
 			&transaction.ID,
 			&transaction.UserID,
-			&transaction.CategoryID,
-			&transaction.AccountID,
+			&categoryID,
+			&accountIDNull,
 			&transaction.Amount,
-			&transaction.Description,
+			&description,
 			&transaction.Date,
 			&transaction.Type,
 			&transaction.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if categoryID.Valid {
+			transaction.CategoryID = int(categoryID.Int32)
+		} else {
+			transaction.CategoryID = 0
+		}
+		if accountIDNull.Valid {
+			v := int(accountIDNull.Int32)
+			transaction.AccountID = &v
+		} else {
+			transaction.AccountID = nil
+		}
+		if description.Valid {
+			transaction.Description = description.String
+		} else {
+			transaction.Description = ""
 		}
 		transactions = append(transactions, transaction)
 	}

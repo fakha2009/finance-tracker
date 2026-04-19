@@ -57,22 +57,9 @@ func (s *exchangeService) GetExchangeRate(baseCurrencyID, targetCurrencyID int) 
 		return nil, err
 	}
 
-	// Если курс устарел (старше 24 часов), обновляем его
-	if rate == nil || time.Since(rate.LastUpdated) > 24*time.Hour {
-		err = s.UpdateExchangeRates()
-		if err != nil {
-			log.Printf("Failed to update exchange rates: %v", err)
-			// Возвращаем старый курс, если обновление не удалось
-			if rate != nil {
-				return rate, nil
-			}
-		} else {
-			// Пытаемся получить обновленный прямой курс
-			if r2, e2 := s.repo.GetExchangeRate(baseCurrencyID, targetCurrencyID); e2 == nil && r2 != nil {
-				rate = r2
-			}
-		}
-	}
+	// Убрано синхронное обновление курсов из-за риска Thundering Herd
+	// и задержек для пользователя. Курсы теперь обновляются только 
+	// при старте сервера и по крону через /api/v1/cron/update-rates.
 
 	if rate != nil {
 		return rate, nil
@@ -142,29 +129,10 @@ func (s *exchangeService) GetAllExchangeRates() ([]models.ExchangeRate, error) {
 		return nil, err
 	}
 
-	// Проверяем, есть ли актуальные курсы
-	needsUpdate := len(rates) == 0
-	if !needsUpdate {
-		for _, rate := range rates {
-			if time.Since(rate.LastUpdated) > 24*time.Hour {
-				needsUpdate = true
-				break
-			}
-		}
-	}
-
-	if needsUpdate {
-		err = s.UpdateExchangeRates()
-		if err != nil {
-			log.Printf("Failed to update exchange rates: %v", err)
-			// Возвращаем старые курсы, если обновление не удалось
-			if len(rates) > 0 {
-				return rates, nil
-			}
-			return nil, errors.New("no exchange rates available")
-		}
-		// Получаем обновленные курсы
-		return s.repo.GetAllExchangeRates()
+	// Убрано синхронное обновление курсов. 
+	// Теперь полагаемся только на стартовый pull и POST /api/v1/cron/update-rates.
+	if len(rates) == 0 {
+		return nil, errors.New("no exchange rates available")
 	}
 
 	return rates, nil

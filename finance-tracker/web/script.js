@@ -14,9 +14,14 @@ let currentTab = 'overview';
 (function(){
     const isFile = location.protocol === 'file:';
     const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+    
+    // In Vercel, we can replace __API_BASE_URL__ during the build step using:
+    // Build Command: sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" script.js
+    const injectedProdUrl = '__API_BASE_URL__';
+    
     window.API_BASE = (isFile || isLocalhost)
         ? 'http://localhost:8080/api/v1'
-        : '/api/v1';
+        : (injectedProdUrl.startsWith('http') ? injectedProdUrl : '/api/v1');
 })();
 
 class NotificationSystem {
@@ -546,7 +551,12 @@ class ApiClient {
             const res = await fetch(`${window.API_BASE}${path}`, { ...opts, headers });
             const isJson = (res.headers.get('content-type') || '').includes('application/json');
             const body = isJson ? await res.json() : await res.text();
-            if (!res.ok) throw new Error(body?.error || body?.message || res.statusText);
+            if (!res.ok) {
+                const err = new Error(body?.error || body?.message || res.statusText);
+                // Attach HTTP status so callers can react to 401, etc.
+                err.status = res.status;
+                throw err;
+            }
             if (key) apiCache.set(key, body);
             else {
                 // invalidate cache on mutations
@@ -559,6 +569,12 @@ class ApiClient {
             // retry on transient network failures
             return await ErrorHandler.withRetry(doFetch, 3, 700);
         } catch (error) {
+            // On auth failure, clear token and switch to anonymous to avoid repeated 401s
+            if (error && (error.status === 401 || /unauthorized|invalid or expired token|401/i.test(String(error.message)))) {
+                try { localStorage.removeItem('token'); } catch(_) {}
+                token = '';
+                try { UIManager.setAnonymous(); } catch(_) {}
+            }
             if (error && (error.name === 'TypeError' || ErrorHandler.isNetworkError(error))) {
                 throw new Error('Ошибка сети: Не удалось подключиться к серверу');
             }
@@ -734,7 +750,19 @@ class UIManager {
         let currencyCode = 'USD';
         let currencySymbol = '$';
         try {
-            if (currentUser && currentUser.default_currency_id && currencies && currencies.length) {
+            // 1) Prefer default account currency (user's primary account)
+            if (accounts && accounts.length) {
+                const defAcc = accounts.find(a => a.is_default) || accounts[0];
+                if (defAcc && currencies && currencies.length) {
+                    const accCur = currencies.find(c => c.id === defAcc.currency_id);
+                    if (accCur) {
+                        currencyCode = accCur.code;
+                        currencySymbol = accCur.symbol || CurrencyUI.getSymbol(accCur.code);
+                    }
+                }
+            }
+            // 2) Fallback to user's default currency
+            if (currencySymbol === '$' && currentUser && currentUser.default_currency_id && currencies && currencies.length) {
                 const defaultCurrency = currencies.find(c => c.id === currentUser.default_currency_id);
                 if (defaultCurrency) {
                     currencyCode = defaultCurrency.code;
@@ -902,6 +930,8 @@ class DataManager {
             try { appState.setState({ accounts: response }); } catch(_) {}
             this.renderAccountSelect();
             this.updateAccountsDisplay();
+            try { UIManager.refreshCurrencyDisplay(); } catch(_) {}
+            try { await DataManager.loadOverviewData(); } catch(_) {}
         } catch (error) {
             console.error('Ошибка загрузки счетов:', error);
             NotificationSystem.show('Не удалось загрузить счета', 'error');
@@ -966,7 +996,15 @@ class DataManager {
             const start = new Date(today.getFullYear(), today.getMonth(), 1);
             const startStr = start.toISOString().slice(0, 10);
             const endStr = today.toISOString().slice(0, 10);
-            const summary = await ApiClient.request(`/transactions/summary?start=${startStr}&end=${endStr}`);
+            // If default account exists, request summary for that account
+            let accountId = null;
+            try {
+                const defAcc = (accounts && accounts.find(a => a.is_default)) || (accounts && accounts[0]);
+                if (defAcc) accountId = defAcc.id;
+            } catch(_) {}
+            const qs = new URLSearchParams({ start: startStr, end: endStr });
+            if (accountId) qs.append('account_id', String(accountId));
+            const summary = await ApiClient.request(`/transactions/summary?${qs.toString()}`);
             UIManager.updateFinancialMetrics(summary);
             try { appState.setState({ summary }); } catch(_) {}
         } catch (error) {
@@ -1496,22 +1534,40 @@ class DataManager {
         if (!ctx) return;
         
         try {
-            const year = new Date().getFullYear();
+            // Use selected year if available
+            let year = new Date().getFullYear();
+            const yearSel = document.getElementById('monthly-year');
+            if (yearSel && yearSel.value) {
+                const y = parseInt(yearSel.value, 10);
+                if (!isNaN(y) && y > 1900) year = y;
+            }
             const monthly = await ApiClient.request(`/transactions/monthly-summary?year=${year}`);
             
             if (charts.monthly) {
                 charts.monthly.destroy();
             }
             
-            if (!monthly || monthly.length === 0) {
-                ctx.parentElement.innerHTML = '<div class="empty-state compact">Нет данных для графика</div>';
-                return;
-            }
+            // Build labels and datasets; if empty, fill with zeros for all months
             
             const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-            const labels = monthly.map(m => monthNames[parseInt(m.month) - 1]);
-            const income = monthly.map(m => parseFloat(m.total_income) || 0);
-            const expense = monthly.map(m => parseFloat(m.total_expense) || 0);
+            let labels = [];
+            let income = [];
+            let expense = [];
+            if (Array.isArray(monthly) && monthly.length > 0) {
+                labels = monthly.map(m => {
+                    try {
+                        const part = String(m.month || '').split('-')[1];
+                        const idx = Math.max(1, Math.min(12, parseInt(part, 10))) - 1;
+                        return monthNames[idx] || '';
+                    } catch (_) { return ''; }
+                });
+                income = monthly.map(m => parseFloat(m.total_income) || 0);
+                expense = monthly.map(m => parseFloat(m.total_expense) || 0);
+            } else {
+                labels = monthNames.slice();
+                income = Array(12).fill(0);
+                expense = Array(12).fill(0);
+            }
             
             charts.monthly = new Chart(ctx, {
                 type: 'bar',
@@ -1549,7 +1605,12 @@ class DataManager {
                                 callback: function(value) {
                                     try {
                                         let cur = 'USD';
-                                        if (currentUser && currentUser.default_currency_id && currencies && currencies.length) {
+                                        // Prefer default account currency if present
+                                        if (accounts && accounts.length) {
+                                            const defAcc = accounts.find(a => a.is_default) || accounts[0];
+                                            const c = currencies && currencies.find(x => x.id === defAcc.currency_id);
+                                            if (c && c.code) cur = c.code;
+                                        } else if (currentUser && currentUser.default_currency_id && currencies && currencies.length) {
                                             const c = currencies.find(x => x.id === currentUser.default_currency_id);
                                             if (c && c.code) cur = c.code;
                                         }
@@ -1567,6 +1628,26 @@ class DataManager {
                     plugins: {
                         legend: {
                             labels: { color: 'var(--text-primary)' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const val = ctx.parsed.y || 0;
+                                    let cur = 'USD';
+                                    try {
+                                        if (accounts && accounts.length) {
+                                            const defAcc = accounts.find(a => a.is_default) || accounts[0];
+                                            const c = currencies && currencies.find(x => x.id === defAcc.currency_id);
+                                            if (c && c.code) cur = c.code;
+                                        } else if (currentUser && currentUser.default_currency_id && currencies && currencies.length) {
+                                            const c = currencies.find(x => x.id === currentUser.default_currency_id);
+                                            if (c && c.code) cur = c.code;
+                                        }
+                                    } catch(_) {}
+                                    const sym = (typeof UIManager !== 'undefined' && UIManager.getCurrencySymbol) ? UIManager.getCurrencySymbol(cur) : '$';
+                                    return `${ctx.dataset.label}: ${sym}${val}`;
+                                }
+                            }
                         }
                     }
                 }
@@ -1911,7 +1992,8 @@ class FormHandlers {
                 
                 await Promise.all([
                     UIManager.loadTabData(currentTab),
-                    DataManager.loadOverviewData()
+                    DataManager.loadOverviewData(),
+                    DataManager.loadAnalytics()
                 ]);
             } catch (error) {
                 NotificationSystem.show(error.message, 'error');
@@ -2169,11 +2251,17 @@ window.updateExchangeRates = async () => {
 };
 
 window.showCreateAccountModal = () => {
-    $('#create-account-modal').classList.add('active');
+    const modal = $('#create-account-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
 };
 
 window.closeModal = (modalId) => {
-    $(`#${modalId}`).classList.remove('active');
+    const modal = $(`#${modalId}`);
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.classList.add('hidden');
 };
 
 window.createAccount = async () => {
@@ -2218,6 +2306,9 @@ window.setDefaultAccount = async (accountId) => {
         });
         NotificationSystem.show('Счет установлен как основной!', 'success');
         await DataManager.loadAccounts();
+        try { await DataManager.loadOverviewData(); } catch(_) {}
+        try { await DataManager.loadAnalytics(); } catch(_) {}
+        try { UIManager.refreshCurrencyDisplay(); } catch(_) {}
     } catch (error) {
         NotificationSystem.show('Ошибка установки счета по умолчанию', 'error');
     }
@@ -2270,14 +2361,40 @@ window.deleteCategory = async (categoryId) => {
     }
     
     try {
-        await ApiClient.request(`/categories/${categoryId}`, {
-            method: 'DELETE'
-        });
+        // Primary attempt: RESTful DELETE /categories/:id
+        try {
+            await ApiClient.request(`/categories/${categoryId}`, { method: 'DELETE' });
+        } catch (err1) {
+            // If endpoint not found, try common alternatives
+            if (err1 && (err1.status === 404 || /not found|404/i.test(String(err1.message)))) {
+                try {
+                    // Alternative 1: /category/:id
+                    await ApiClient.request(`/category/${categoryId}`, { method: 'DELETE' });
+                } catch (err2) {
+                    if (err2 && (err2.status === 404 || /not found|404/i.test(String(err2.message)))) {
+                        // Alternative 2: POST to /categories/delete with body
+                        await ApiClient.request('/categories/delete', {
+                            method: 'POST',
+                            body: JSON.stringify({ id: categoryId })
+                        });
+                    } else {
+                        throw err2;
+                    }
+                }
+            } else {
+                throw err1;
+            }
+        }
         
         NotificationSystem.show('Категория успешно удалена!', 'success');
         await DataManager.loadCategories();
     } catch (error) {
-        NotificationSystem.show('Ошибка удаления категории', 'error');
+        const msg = (error && (error.message || '')).toString();
+        if (/not found|404/i.test(msg) || error?.status === 404) {
+            NotificationSystem.show('Удаление не поддержано бекендом (404). Проверьте маршрут удаления категории.', 'error');
+        } else {
+            NotificationSystem.show('Ошибка удаления категории', 'error');
+        }
     }
 };
 
@@ -2333,6 +2450,8 @@ async function initApp() {
             const msg = (error && error.message) ? String(error.message) : '';
             const unauthorized = /unauthorized|401/i.test(msg);
             if (unauthorized) {
+                try { localStorage.removeItem('token'); } catch(_) {}
+                token = '';
                 UIManager.setAnonymous();
                 NotificationSystem.show('Сессия истекла. Пожалуйста, войдите снова.', 'error');
             } else {

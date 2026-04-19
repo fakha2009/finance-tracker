@@ -9,6 +9,7 @@ type CategoryService interface {
 	CreateCategory(category *models.Category) error
 	GetUserCategories(userID int) ([]models.Category, error)
 	GetCategoryByID(id int) (*models.Category, error)
+	DeleteCategory(id int, userID int) error
 }
 
 type categoryService struct {
@@ -29,4 +30,8 @@ func (s *categoryService) GetUserCategories(userID int) ([]models.Category, erro
 
 func (s *categoryService) GetCategoryByID(id int) (*models.Category, error) {
 	return s.repo.GetCategoryByID(id)
+}
+
+func (s *categoryService) DeleteCategory(id int, userID int) error {
+	return s.repo.DeleteCategory(id, userID)
 }
