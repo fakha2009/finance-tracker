@@ -1,0 +1,4 @@
+finance-tracker/.env
+finance-tracker/*.exe
+finance-tracker/.vercel/
+finance-tracker/web/node_modules/

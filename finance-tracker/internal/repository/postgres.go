@@ -34,6 +34,11 @@ func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
 		return nil, err
 	}
 
+	// Managed Postgres providers commonly sit behind poolers / proxies in
+	// serverless environments. Avoid auto-prepared statements so the same
+	// connection config remains compatible on Vercel.
+	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
+
 	// Защита от зависающих (slow) запросов: таймаут 10 секунд на уровене подключения.
 	// Это критично для продакшена, так как везде используется context.Background().
 	if config.ConnConfig.RuntimeParams == nil {

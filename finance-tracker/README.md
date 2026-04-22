@@ -128,7 +128,26 @@ go run ./cmd/server
 
 6. **Откройте фронтенд**
 Откройте `web/index.html` в браузере
+## 🚀 Развёртывание на Vercel
+1. Зарегистрируйтесь или войдите на https://vercel.com.
+2. Подключите репозиторий к Vercel.
+3. Убедитесь, что в корне проекта есть `vercel.json` и папка `api/`.
+4. В Vercel > Settings > Environment Variables добавьте:
+   - `DATABASE_URL`
+   - `JWT_SECRET`
+   - `GIN_MODE=release`
+   - `ALLOWED_ORIGIN=https://<ваш-проект>.vercel.app`
+5. Деплой выполнится автоматически.
 
+### Особенности Vercel
+- Backend размещается как serverless Go-функция из `api/index.go`.
+- Frontend будет обслуживаться как статический сайт из папки `web`.
+- Для работы API нужен внешний PostgreSQL; Vercel не хостит Postgres.
+
+### Полезные пути
+- Фронтенд: `/`
+- API: `/api/v1`
+- Проверка здоровья: `/api/v1/health`
 ### Переменные окружения
 - `PORT` (по умолчанию `8080`)
 - `DATABASE_URL` (пример в `docker-compose.yml`)
@@ -284,8 +303,18 @@ curl -X POST http://localhost:8080/api/v1/register \
 | Переменная | Описание | По умолчанию |
 |------------|----------|--------------|
 | `PORT` | Порт сервера | `8080` |
-| `DATABASE_URL` | URL базы данных | `host=localhost port=5432 user=postgres password=fakha dbname=transactions sslmode=disable` |
+| `DATABASE_URL` | URL базы данных | `postgres://postgres:password@localhost:5432/postgres?sslmode=disable` |
+| `POSTGRES_URL_NON_POOLING` | Альтернативный URL для Supabase pooler | | 
+| `POSTGRES_URL` | Альтернативный URL для Supabase | | 
+| `POSTGRES_PRISMA_URL` | Придерживается формата Prisma/Supabase | | 
+| `POSTGRES_USER` | Имя пользователя Postgres | `postgres` |
+| `POSTGRES_PASSWORD` | Пароль Postgres | `` |
+| `POSTGRES_HOST` | Хост Postgres | `localhost` |
+| `POSTGRES_PORT` | Порт Postgres | `5432` |
+| `POSTGRES_DATABASE` | Название базы данных | `postgres` |
+| `PGSSLMODE` | SSL режим для Postgres | `require` |
 | `JWT_SECRET` | Секретный ключ JWT | `your-super-secret-jwt-key-change-in-production` |
+| `SUPABASE_JWT_SECRET` | Альтернативный JWT секрет из Supabase | | 
 | `GIN_MODE` | Режим Gin | `debug` |
 | `EXCHANGE_API_ENDPOINT` | API курсов валют | `https://api.exchangerate-api.com/v4/latest/USD` |
 
