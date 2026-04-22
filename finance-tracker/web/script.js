@@ -1157,7 +1157,7 @@ class DataManager {
             return `
                 <div class="transaction-item compact transaction-${transaction.type}">
                     <div class="transaction-icon">
-                        <i class="fas ${transaction.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        <i class="fas ${transaction.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
                     </div>
                     <div class="transaction-details">
                         <div class="transaction-title">${SecurityManager.sanitizeHTML(transaction.description || 'Без описания')}</div>
@@ -1201,7 +1201,7 @@ class DataManager {
             return `
                 <div class="transaction-item transaction-${transaction.type}">
                     <div class="transaction-icon">
-                        <i class="fas ${transaction.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        <i class="fas ${transaction.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
                     </div>
                     <div class="transaction-details">
                         <div class="transaction-title">${SecurityManager.sanitizeHTML(transaction.description || 'Без описания')}</div>
@@ -1241,7 +1241,7 @@ class DataManager {
                     <div class="category-info">
                         <h4>${category.name}</h4>
                         <div class="category-type ${category.type}">
-                            <i class="fas ${category.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                            <i class="fas ${category.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
                             ${category.type === 'income' ? 'Доход' : 'Расход'}
                         </div>
                     </div>
