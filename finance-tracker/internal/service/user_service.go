@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/repository"
-	"personal-finance-tracker/internal/utils"
+	"handler/internal/models"
+	"handler/internal/repository"
+	"handler/internal/utils"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"

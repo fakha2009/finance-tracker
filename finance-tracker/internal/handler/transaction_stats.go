@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	"personal-finance-tracker/internal/middleware"
+	"handler/internal/middleware"
 	"strconv"
 	"time"
 

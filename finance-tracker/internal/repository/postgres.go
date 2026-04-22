@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"personal-finance-tracker/internal/models"
+	"handler/internal/models"
 	"time"
 
 	"github.com/jackc/pgx/v5"

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	"personal-finance-tracker/internal/service"
+	"handler/internal/service"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

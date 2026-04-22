@@ -2,9 +2,9 @@ package handler
 
 import (
 	"net/http"
-	"personal-finance-tracker/internal/middleware"
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/service"
+	"handler/internal/middleware"
+	"handler/internal/models"
+	"handler/internal/service"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

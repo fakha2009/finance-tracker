@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"personal-finance-tracker/internal/middleware"
-	"personal-finance-tracker/internal/service"
+	"handler/internal/middleware"
+	"handler/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

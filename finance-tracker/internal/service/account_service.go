@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/repository"
+	"handler/internal/models"
+	"handler/internal/repository"
 )
 
 type AccountService interface {

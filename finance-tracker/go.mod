@@ -1,4 +1,4 @@
-module personal-finance-tracker
+module handler
 
 go 1.23
 

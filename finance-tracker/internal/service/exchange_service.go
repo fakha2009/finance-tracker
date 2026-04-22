@@ -7,8 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/repository"
+	"handler/internal/models"
+	"handler/internal/repository"
 	"time"
 )
 

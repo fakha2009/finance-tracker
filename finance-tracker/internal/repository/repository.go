@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"personal-finance-tracker/internal/models"
+	"handler/internal/models"
 	"time"
 )
 

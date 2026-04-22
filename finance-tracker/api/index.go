@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"personal-finance-tracker/internal/config"
-	"personal-finance-tracker/internal/handler"
-	"personal-finance-tracker/internal/repository"
-	"personal-finance-tracker/internal/service"
-	"personal-finance-tracker/internal/utils"
+	"handler/internal/config"
+	"handler/internal/handler"
+	"handler/internal/repository"
+	"handler/internal/service"
+	"handler/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,8 +2,8 @@ package service
 
 import (
 	
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/repository"
+	"handler/internal/models"
+	"handler/internal/repository"
 )
 
 type CurrencyService interface {

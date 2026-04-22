@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"net/http"
-	"personal-finance-tracker/internal/models"
-	"personal-finance-tracker/internal/service"
-	"personal-finance-tracker/internal/utils"
+	"handler/internal/models"
+	"handler/internal/service"
+	"handler/internal/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
