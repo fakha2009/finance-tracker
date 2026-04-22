@@ -48,13 +48,13 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 
 -- Вставка стандартных категорий для демо
 INSERT INTO categories (user_id, name, description, type) VALUES
-(NULL, 'Salary', 'Monthly salary', 'income'),
-(NULL, 'Freelance', 'Freelance work', 'income'),
-(NULL, 'Investments', 'Investment income', 'income'),
-(NULL, 'Food', 'Groceries and dining', 'expense'),
-(NULL, 'Transport', 'Transportation costs', 'expense'),
-(NULL, 'Utilities', 'Bills and utilities', 'expense'),
-(NULL, 'Entertainment', 'Entertainment expenses', 'expense'),
-(NULL, 'Healthcare', 'Medical expenses', 'expense')
+(NULL, 'Зарплата', 'Ежемесячная зарплата', 'income'),
+(NULL, 'Фриланс', 'Доход от фриланса', 'income'),
+(NULL, 'Инвестиции', 'Доход от инвестиций', 'income'),
+(NULL, 'Еда', 'Продукты и питание', 'expense'),
+(NULL, 'Транспорт', 'Расходы на транспорт', 'expense'),
+(NULL, 'Коммунальные услуги', 'Счета и коммунальные платежи', 'expense'),
+(NULL, 'Развлечения', 'Расходы на развлечения', 'expense'),
+(NULL, 'Здоровье', 'Медицинские расходы', 'expense')
 ON CONFLICT DO NOTHING;
 
