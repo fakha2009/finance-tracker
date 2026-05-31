@@ -1542,6 +1542,271 @@ input, select { font-family: inherit; }
 .btn-danger:hover { background: var(--neg); color: #fff; border-color: var(--neg); }
 
 /* =========================================================================
+   Transaction items — class names used by script.js renderTransactions()
+   ========================================================================= */
+.transaction-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--hairline);
+  transition: background 0.2s var(--ease);
+}
+.transaction-item:last-child { border-bottom: none; }
+.transaction-item:hover { background: var(--surface-2); border-radius: var(--r-sm); padding-left: 8px; padding-right: 8px; }
+.transaction-item.compact { padding: 12px 4px; }
+
+.transaction-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.transaction-income .transaction-icon,
+.transaction-item.transaction-income .transaction-icon { color: var(--pos); background: var(--pos-soft); }
+.transaction-expense .transaction-icon,
+.transaction-item.transaction-expense .transaction-icon { color: var(--neg); background: var(--neg-soft); }
+
+.transaction-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.transaction-title {
+  font-weight: 500;
+  font-size: 0.94rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.transaction-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  flex-wrap: wrap;
+}
+.transaction-meta span { white-space: nowrap; }
+
+.transaction-amount {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.amount-income { color: var(--pos); }
+.amount-expense { color: var(--text); }
+
+/* =========================================================================
+   Account cards — class names used by script.js updateAccountsDisplay()
+   ========================================================================= */
+.account-card {
+  position: relative;
+  padding: 22px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(4,120,87,0.03)), var(--surface-2);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.account-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+.account-card.default,
+.account-card.selected { border-color: var(--emerald); box-shadow: var(--glow-emerald); }
+
+.account-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.account-info { display: flex; flex-direction: column; gap: 4px; }
+.account-info h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.currency-code {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  background: var(--surface-4);
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  width: fit-content;
+}
+.account-card.default .currency-code { color: var(--gold); background: rgba(231,194,119,0.12); }
+
+.account-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.default-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--gold);
+  background: rgba(231,194,119,0.12);
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+}
+
+.account-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.balance-amount {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.balance-currency {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.account-equivalents { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; }
+.equivalent-line { font-size: 0.82rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.account-meta { font-size: 0.74rem; color: var(--text-3); margin-top: 4px; }
+
+/* account details modal */
+.account-details-content { display: flex; flex-direction: column; gap: 0; }
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.9rem;
+}
+.detail-item:last-child { border-bottom: none; }
+.detail-label { color: var(--text-3); }
+.detail-value { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* =========================================================================
+   Balance cards — updateBalancesDisplay()
+   ========================================================================= */
+.balance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  transition: border-color 0.25s var(--ease);
+}
+.balance-card:hover { border-color: var(--border); }
+.balance-info { display: flex; flex-direction: column; gap: 4px; }
+.balance-info h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--emerald-bright);
+  background: var(--pos-soft);
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+}
+.balance-info .balance-amount {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.balance-usd { font-size: 0.82rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* =========================================================================
+   Exchange rate cards — updateExchangeRatesDisplay()
+   ========================================================================= */
+.exchange-rate-card {
+  padding: 18px 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  transition: border-color 0.25s var(--ease);
+}
+.exchange-rate-card:hover { border-color: var(--border); }
+.exchange-rate-card .rate-pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.exchange-rate-card .rate-pair i { font-size: 0.7rem; color: var(--text-3); }
+.base-currency { color: var(--text); }
+.target-currency { color: var(--emerald-bright); }
+.exchange-rate-card .rate-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.rate-updated { font-size: 0.74rem; color: var(--text-3); }
+
+/* =========================================================================
+   Category breakdown — renderCategoryBreakdown()
+   ========================================================================= */
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.breakdown-item:last-child { border-bottom: none; }
+.breakdown-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.breakdown-name {
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.type-income { color: var(--pos); font-size: 0.74rem; font-weight: 600; }
+.type-expense { color: var(--neg); font-size: 0.74rem; font-weight: 600; }
+.breakdown-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.breakdown-amount {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.breakdown-percentage {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================================
+   Modal active state (script.js opens with .active not removing .hidden)
+   ========================================================================= */
+.modal-overlay.active { display: grid !important; }
+
+/* =========================================================================
    Responsive
    ========================================================================= */
 @media (max-width: 1100px) {

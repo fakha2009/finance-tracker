@@ -43,7 +43,7 @@ class NotificationSystem {
                 <div class="notification-message">${message}</div>
             </div>
             <button class="notification-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
+                <i class="fas fa-xmark"></i>
             </button>
         `;
         
