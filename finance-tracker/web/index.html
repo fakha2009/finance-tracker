@@ -29,7 +29,7 @@
           <div class="input-group">
             <i class="fas fa-user"></i>
             <input id="settings-username" type="text" placeholder=" " required />
-            <label>Имя пользователя</label>
+            <label for="settings-username">Имя пользователя</label>
             <div class="input-highlight"></div>
           </div>
           <div class="input-group">
@@ -45,19 +45,19 @@
           <div class="input-group">
             <i class="fas fa-lock"></i>
             <input id="old-password" type="password" placeholder=" " />
-            <label>Текущий пароль</label>
+            <label for="old-password">Текущий пароль</label>
             <div class="input-highlight"></div>
           </div>
           <div class="input-group">
             <i class="fas fa-key"></i>
             <input id="new-password" type="password" placeholder=" " />
-            <label>Новый пароль</label>
+            <label for="new-password">Новый пароль</label>
             <div class="input-highlight"></div>
           </div>
           <div class="input-group">
             <i class="fas fa-key"></i>
             <input id="confirm-password" type="password" placeholder=" " />
-            <label>Подтвердите пароль</label>
+            <label for="confirm-password">Подтвердите пароль</label>
             <div class="input-highlight"></div>
           </div>
           <div class="modal-footer" style="margin-top:1rem;">
@@ -100,116 +100,118 @@
           </button>
         </div>
 
-        <div id="auth" class="auth-section hidden">
-          <div class="auth-hero">
-            <div id="login-hero" class="hero-scene active" aria-hidden="false">
-              <div class="hero-card">
-                <div class="hero-icon">
-                  <img src="assets/logo-jade.svg" alt="Jade" />
-                </div>
-                <h3>С возвращением</h3>
-                <p>Управляйте капиталом осознанно</p>
-              </div>
-            </div>
-            <div id="register-hero" class="hero-scene" aria-hidden="true">
-              <div class="hero-card">
-                <div class="hero-icon hero-icon--spark">
-                  <i class="fas fa-seedling"></i>
-                </div>
-                <h3>Создайте аккаунт</h3>
-                <p>Начните путь к финансовой свободе</p>
-              </div>
-            </div>
-          </div>
-          <div id="auth-forms" class="auth-forms-container">
-            <div class="auth-tabs">
-              <button class="tab-btn active" data-tab="login">
-                <i class="fas fa-right-to-bracket"></i>
-                Вход
-              </button>
-              <button class="tab-btn" data-tab="register">
-                <i class="fas fa-user-plus"></i>
-                Регистрация
-              </button>
-            </div>
-
-            <div class="tab-content active" id="login-tab">
-              <form id="login-form" class="auth-form">
-                <div class="form-header">
-                  <h3>Вход в Jade</h3>
-                  <p>Войдите в свой аккаунт</p>
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-envelope"></i>
-                  <input id="login-email" type="email" placeholder=" " required />
-                  <label>Email</label>
-                  <div class="input-highlight"></div>
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-lock"></i>
-                  <input id="login-password" type="password" placeholder=" " required />
-                  <label>Пароль</label>
-                  <div class="input-highlight"></div>
-                  <button type="button" id="login-pass-toggle" class="input-action" aria-label="Показать пароль">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                </div>
-                <button type="submit" class="btn-primary btn-glow btn-full">
-                  <span class="btn-content">
-                    <i class="fas fa-right-to-bracket"></i>
-                    Войти в аккаунт
-                  </span>
-                  <div class="btn-shine"></div>
-                </button>
-              </form>
-            </div>
-
-            <div class="tab-content" id="register-tab">
-              <form id="register-form" class="auth-form">
-                <div class="form-header">
-                  <h3>Создать аккаунт</h3>
-                  <p>Присоединяйтесь к Jade Pro</p>
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-user"></i>
-                  <input id="reg-username" type="text" placeholder=" " required />
-                  <label>Имя пользователя</label>
-                  <div class="input-highlight"></div>
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-envelope"></i>
-                  <input id="reg-email" type="email" placeholder=" " required />
-                  <label>Email</label>
-                  <div class="input-highlight"></div>
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-lock"></i>
-                  <input id="reg-password" type="password" placeholder=" " required />
-                  <label>Пароль</label>
-                  <div class="input-highlight"></div>
-                  <button type="button" id="reg-pass-toggle" class="input-action" aria-label="Показать пароль">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <div class="password-strength">
-                    <div class="strength-bar">
-                      <div id="password-strength-bar"></div>
-                    </div>
-                    <div id="password-strength-text" class="strength-text">Надёжность пароля</div>
-                  </div>
-                </div>
-                <button type="submit" class="btn-primary btn-glow btn-full">
-                  <span class="btn-content">
-                    <i class="fas fa-user-plus"></i>
-                    Зарегистрироваться
-                  </span>
-                  <div class="btn-shine"></div>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
       </nav>
     </header>
+
+    <!-- Auth page (outside header so it's not clipped by nav height) -->
+    <div id="auth" class="auth-section hidden">
+      <div class="auth-hero">
+        <div id="login-hero" class="hero-scene active" aria-hidden="false">
+          <div class="hero-card">
+            <div class="hero-icon">
+              <img src="assets/logo-jade.svg" alt="Jade" />
+            </div>
+            <h3>С возвращением</h3>
+            <p>Управляйте капиталом осознанно</p>
+          </div>
+        </div>
+        <div id="register-hero" class="hero-scene" aria-hidden="true">
+          <div class="hero-card">
+            <div class="hero-icon hero-icon--spark">
+              <i class="fas fa-seedling"></i>
+            </div>
+            <h3>Создайте аккаунт</h3>
+            <p>Начните путь к финансовой свободе</p>
+          </div>
+        </div>
+      </div>
+      <div id="auth-forms" class="auth-forms-container">
+        <div class="auth-tabs">
+          <button class="tab-btn active" data-tab="login">
+            <i class="fas fa-right-to-bracket"></i>
+            Вход
+          </button>
+          <button class="tab-btn" data-tab="register">
+            <i class="fas fa-user-plus"></i>
+            Регистрация
+          </button>
+        </div>
+
+        <div class="tab-content active" id="login-tab">
+          <form id="login-form" class="auth-form">
+            <div class="form-header">
+              <h3>Вход в Jade</h3>
+              <p>Войдите в свой аккаунт</p>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-envelope"></i>
+              <input id="login-email" type="email" placeholder=" " required />
+              <label for="login-email">Email</label>
+              <div class="input-highlight"></div>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-lock"></i>
+              <input id="login-password" type="password" placeholder=" " required />
+              <label for="login-password">Пароль</label>
+              <div class="input-highlight"></div>
+              <button type="button" id="login-pass-toggle" class="input-action" aria-label="Показать пароль">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <button type="submit" class="btn-primary btn-glow btn-full">
+              <span class="btn-content">
+                <i class="fas fa-right-to-bracket"></i>
+                Войти в аккаунт
+              </span>
+              <div class="btn-shine"></div>
+            </button>
+          </form>
+        </div>
+
+        <div class="tab-content" id="register-tab">
+          <form id="register-form" class="auth-form">
+            <div class="form-header">
+              <h3>Создать аккаунт</h3>
+              <p>Присоединяйтесь к Jade Pro</p>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-user"></i>
+              <input id="reg-username" type="text" placeholder=" " required />
+              <label for="reg-username">Имя пользователя</label>
+              <div class="input-highlight"></div>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-envelope"></i>
+              <input id="reg-email" type="email" placeholder=" " required />
+              <label for="reg-email">Email</label>
+              <div class="input-highlight"></div>
+            </div>
+            <div class="input-group">
+              <i class="fas fa-lock"></i>
+              <input id="reg-password" type="password" placeholder=" " required />
+              <label for="reg-password">Пароль</label>
+              <div class="input-highlight"></div>
+              <button type="button" id="reg-pass-toggle" class="input-action" aria-label="Показать пароль">
+                <i class="fas fa-eye"></i>
+              </button>
+              <div class="password-strength">
+                <div class="strength-bar">
+                  <div id="password-strength-bar"></div>
+                </div>
+                <div id="password-strength-text" class="strength-text">Надёжность пароля</div>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary btn-glow btn-full">
+              <span class="btn-content">
+                <i class="fas fa-user-plus"></i>
+                Зарегистрироваться
+              </span>
+              <div class="btn-shine"></div>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <!-- Main -->
     <main id="app" class="premium-dashboard hidden">
@@ -384,8 +386,8 @@
                 <div class="input-group compact"><select id="tx-type" required><option value="expense">Расход</option><option value="income">Доход</option></select><div class="input-highlight"></div></div>
                 <div class="input-group compact"><select id="tx-account" required><option value="">Выберите счет</option></select><div class="input-highlight"></div></div>
                 <div class="input-group compact"><select id="tx-category" required><option value="">Выберите категорию</option></select><div class="input-highlight"></div></div>
-                <div class="input-group compact"><input id="tx-amount" type="number" step="0.01" placeholder=" " required /><label>Сумма</label><div class="input-highlight"></div></div>
-                <div class="input-group compact full-width"><input id="tx-desc" placeholder=" " /><label>Описание</label><div class="input-highlight"></div></div>
+                <div class="input-group compact"><input id="tx-amount" type="number" step="0.01" placeholder=" " required /><label for="tx-amount">Сумма</label><div class="input-highlight"></div></div>
+                <div class="input-group compact full-width"><input id="tx-desc" placeholder=" " /><label for="tx-desc">Описание</label><div class="input-highlight"></div></div>
                 <div class="input-group compact"><input id="tx-date" type="date" required /><div class="input-highlight"></div></div>
                 <button type="submit" class="btn-primary btn-sm"><i class="fas fa-check"></i>Добавить</button>
               </div>
@@ -487,9 +489,9 @@
               </div>
               <form id="category-form" class="category-form">
                 <div class="form-grid">
-                  <div class="input-group"><i class="fas fa-tag"></i><input id="cat-name" type="text" placeholder=" " required /><label>Название категории</label><div class="input-highlight"></div></div>
+                  <div class="input-group"><i class="fas fa-tag"></i><input id="cat-name" type="text" placeholder=" " required /><label for="cat-name">Название категории</label><div class="input-highlight"></div></div>
                   <div class="input-group"><i class="fas fa-arrow-right-arrow-left"></i><select id="cat-type" required><option value="expense">Расход</option><option value="income">Доход</option></select><div class="input-highlight"></div></div>
-                  <div class="input-group full-width"><i class="fas fa-align-left"></i><input id="cat-desc" type="text" placeholder=" " /><label>Описание (необязательно)</label><div class="input-highlight"></div></div>
+                  <div class="input-group full-width"><i class="fas fa-align-left"></i><input id="cat-desc" type="text" placeholder=" " /><label for="cat-desc">Описание (необязательно)</label><div class="input-highlight"></div></div>
                   <button type="submit" class="btn-primary"><i class="fas fa-plus"></i>Создать категорию</button>
                 </div>
               </form>
@@ -613,9 +615,9 @@
         <button class="modal-close" onclick="closeModal('create-account-modal')"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
-        <div class="input-group"><i class="fas fa-wallet"></i><input id="account-name" type="text" placeholder=" " required /><label>Название счета</label><div class="input-highlight"></div></div>
+        <div class="input-group"><i class="fas fa-wallet"></i><input id="account-name" type="text" placeholder=" " required /><label for="account-name">Название счета</label><div class="input-highlight"></div></div>
         <div class="input-group"><i class="fas fa-coins"></i><select id="account-currency" required><option value="">Выберите валюту</option><option value="RUB">RUB</option><option value="USD">USD</option><option value="EUR">EUR</option></select><div class="input-highlight"></div></div>
-        <div class="input-group"><i class="fas fa-money-bill-wave"></i><input id="initial-balance" type="number" step="0.01" placeholder=" " value="0" /><label>Начальный баланс</label><div class="input-highlight"></div></div>
+        <div class="input-group"><i class="fas fa-money-bill-wave"></i><input id="initial-balance" type="number" step="0.01" placeholder=" " value="0" /><label for="initial-balance">Начальный баланс</label><div class="input-highlight"></div></div>
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeModal('create-account-modal')">Отмена</button>

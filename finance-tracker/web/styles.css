@@ -1083,7 +1083,7 @@ input, select { font-family: inherit; }
   grid-template-columns: 1fr 1fr;
   gap: 0;
   max-width: 1040px;
-  margin: 7vh auto;
+  margin: 4vh auto 7vh;
   background: var(--surface-1);
   border: 1px solid var(--border-soft);
   border-radius: var(--r-xl);
