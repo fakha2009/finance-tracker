@@ -1249,6 +1249,299 @@ input, select { font-family: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* =========================================================================
+   Notifications (.notification — used by NotificationSystem in script.js)
+   ========================================================================= */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 300px;
+  max-width: 380px;
+  padding: 16px 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  animation: slideInRight 0.35s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.notification::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--emerald);
+  border-radius: 3px 0 0 3px;
+}
+.notification.success::before { background: var(--emerald-bright); }
+.notification.error::before   { background: var(--neg); }
+.notification.info::before    { background: var(--info); }
+
+.notification > i {
+  font-size: 1.05rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--emerald-bright);
+}
+.notification.error > i  { color: var(--neg); }
+.notification.info > i   { color: var(--info); }
+
+.notification-content { flex: 1; min-width: 0; }
+.notification-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.notification-message {
+  font-size: 0.83rem;
+  color: var(--text-2);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notification-close {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  border-radius: var(--r-sm);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  margin-top: -2px;
+}
+.notification-close:hover { background: var(--surface-3); color: var(--text); }
+
+/* =========================================================================
+   Currency Picker Modal (.currency-modal / .currency-grid / .currency-card)
+   ========================================================================= */
+.currency-modal .modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--hairline);
+}
+.currency-modal .modal-header h3 {
+  font-size: 1.35rem;
+  color: var(--text);
+}
+.currency-modal .modal-header p {
+  font-size: 0.88rem;
+  color: var(--text-3);
+  margin: 0;
+}
+.currency-modal .modal-body { padding: 24px 28px; }
+.currency-modal .modal-footer {
+  padding: 0 28px 24px;
+  border-top: none;
+  justify-content: flex-start;
+}
+.currency-modal .help-text {
+  font-size: 0.82rem;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.currency-modal .help-text::before {
+  content: "";
+  display: inline-block;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--pos-soft);
+  border: 1px solid rgba(52,211,153,0.3);
+  flex-shrink: 0;
+}
+
+/* grid of cards */
+.currency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.currency-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 20px 18px 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.28s var(--ease), border-color 0.28s var(--ease), box-shadow 0.28s var(--ease);
+  user-select: none;
+}
+.currency-card::after {
+  content: "";
+  position: absolute;
+  right: -18px; top: -18px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--emerald);
+  opacity: 0.06;
+  filter: blur(6px);
+  transition: opacity 0.3s var(--ease);
+}
+.currency-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.currency-card:hover::after { opacity: 0.12; }
+
+.currency-card.selected,
+.currency-card.success {
+  border-color: var(--emerald);
+  box-shadow: var(--glow-emerald);
+  background: linear-gradient(135deg, rgba(52,211,153,0.10), rgba(4,120,87,0.04)), var(--surface-2);
+}
+.currency-card.loading { pointer-events: none; opacity: 0.7; }
+
+.currency-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.currency-icon {
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  color: var(--emerald-bright);
+  background: var(--pos-soft);
+  border: 1px solid rgba(52,211,153,0.15);
+}
+.currency-badge {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--surface-4);
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+}
+.currency-card.selected .currency-badge,
+.currency-card.success .currency-badge {
+  color: var(--text-on-emerald);
+  background: var(--grad-emerald);
+}
+
+.currency-card__body { margin-bottom: 16px; }
+.currency-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.currency-symbol {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-3);
+  line-height: 1;
+}
+.currency-card.selected .currency-symbol,
+.currency-card.success .currency-symbol { color: var(--emerald-bright); }
+
+.currency-card__footer { margin-top: auto; }
+.select-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-3);
+  transition: color 0.2s var(--ease);
+}
+.currency-card:hover .select-hint { color: var(--emerald-bright); }
+.currency-card.selected .select-hint,
+.currency-card.success .select-hint { color: var(--pos); }
+
+/* =========================================================================
+   Category cards — class names used by script.js renderCategories()
+   ========================================================================= */
+.category-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.category-info { display: flex; flex-direction: column; gap: 6px; }
+.category-info h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.category-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  width: fit-content;
+}
+.category-type.income { color: var(--pos); background: var(--pos-soft); }
+.category-type.expense { color: var(--neg); background: var(--neg-soft); }
+.category-type i { font-size: 0.7rem; }
+
+.category-desc {
+  font-size: 0.84rem;
+  color: var(--text-2);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.category-stats { margin-bottom: 16px; }
+.category-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+.stat-label { color: var(--text-3); }
+.stat-value { color: var(--text-2); font-weight: 500; }
+
+.category-actions { display: flex; gap: 8px; margin-top: auto; }
+
+/* btn-danger used by script.js delete buttons */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--neg);
+  background: var(--neg-soft);
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  font-family: inherit;
+}
+.btn-danger.btn-sm { padding: 7px 12px; font-size: 0.78rem; }
+.btn-danger:hover { background: var(--neg); color: #fff; border-color: var(--neg); }
+
+/* =========================================================================
    Responsive
    ========================================================================= */
 @media (max-width: 1100px) {
