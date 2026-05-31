@@ -622,6 +622,13 @@ class UIManager {
         this.animateDashboardEntrance();
         this.initTabNavigation();
         try { this.refreshCurrencyDisplay(); } catch(_) {}
+
+        // restore last active tab on refresh
+        const validTabs = ['overview','transactions','analytics','accounts','categories','exchange'];
+        const saved = (() => { try { return localStorage.getItem('jade_active_tab'); } catch(_) { return null; } })();
+        if (saved && validTabs.includes(saved) && saved !== 'overview') {
+            this.switchTab(saved);
+        }
     }
     
     static setAnonymous() {
@@ -697,7 +704,9 @@ class UIManager {
         currentTab = tabName;
         // sync state
         try { appState.setState({ ui: { ...appState.state.ui, currentTab: tabName } }); } catch(_) {}
-        
+        // persist so page refresh restores position
+        try { localStorage.setItem('jade_active_tab', tabName); } catch(_) {}
+
         this.loadTabData(tabName);
     }
     
